@@ -5,16 +5,8 @@ const path = require('path');
 const aiService = require('../services/aiService');
 const fileService = require('../services/fileService');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for file uploads (memory storage for serverless)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -42,15 +34,11 @@ router.post('/process', upload.single('image'), async (req, res) => {
     const { prompt, provider = 'huggingface' } = req.body;
     
     if (!prompt) {
-      await fileService.cleanupFile(req.file.path);
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    // Process image with AI service
-    const result = await aiService.processImage(req.file.path, prompt, provider);
-
-    // Clean up uploaded file
-    await fileService.cleanupFile(req.file.path);
+    // Process image with AI service (using buffer for serverless)
+    const result = await aiService.processImage(req.file.buffer, prompt, provider);
 
     res.json({
       success: true,
@@ -59,11 +47,6 @@ router.post('/process', upload.single('image'), async (req, res) => {
 
   } catch (error) {
     console.error('Error processing image:', error);
-    
-    // Clean up file if it exists
-    if (req.file) {
-      await fileService.cleanupFile(req.file.path);
-    }
     
     res.status(500).json({ 
       error: 'Failed to process image',
