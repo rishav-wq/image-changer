@@ -1,0 +1,16 @@
+{
+  "name": "ai-image-editor",
+  "version": "1.0.0",
+  "description": "AI-powered image editor with React frontend and Node.js backend",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build"
+  },
+  "keywords": ["ai", "image-editor", "react", "nodejs", "huggingface"],
+  "author": "",
+  "license": "ISC"
+}
